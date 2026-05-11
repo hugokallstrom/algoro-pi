@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.11+, FastAPI 0.111+, Uvicorn, Jinja2, HTMX 1.9 (bundled locally — no CDN), bcrypt, SQLite (stdlib), Unbound, dnscrypt-proxy, systemd, Raspberry Pi OS Lite 64-bit
 
-**v1 simplification:** "Recent block events" from the spec is deferred — requires IPC between Unbound and the admin app. The UI shows status + blocklist only.
+**v1 simplifications:** "Recent block events" from the spec is deferred — requires IPC between Unbound and the admin app. The UI shows status + blocklist only. LED daemon is omitted — no physical LED on the enclosure for v1.
 
 ---
 
@@ -25,7 +25,6 @@ firmware/
 │       ├── auth.py                      # password hashing + session tokens
 │       ├── blocklist.py                 # domain CRUD + file export + preset import
 │       ├── dns_control.py               # Unbound config generation + reload
-│       ├── led.py                       # LED status daemon (GPIO or no-op)
 │       └── admin/
 │           ├── __init__.py
 │           ├── app.py                   # create_app() factory
@@ -50,15 +49,13 @@ firmware/
 │   └── hard_mode.txt
 ├── systemd/
 │   ├── slopstop-admin.service
-│   ├── slopstop-led.service
 │   └── install.sh
 └── tests/
     ├── test_db.py
     ├── test_auth.py
     ├── test_blocklist.py
     ├── test_dns_control.py
-    ├── test_admin.py
-    └── test_led.py
+    └── test_admin.py
 ```
 
 ---
@@ -1504,183 +1501,13 @@ git commit -m "feat: admin dashboard and blocklist management UI"
 
 ---
 
-## Task 9: LED status daemon
-
-**Files:**
-- Create: `firmware/src/slopstop/led.py`
-- Create: `firmware/tests/test_led.py`
-
-- [ ] **Step 1: Write the failing tests**
-
-`firmware/tests/test_led.py`:
-```python
-import time
-from unittest.mock import MagicMock, call, patch
-
-import pytest
-
-
-def test_set_led_when_gpio_unavailable_does_not_raise() -> None:
-    import slopstop.led as led_module
-    original = led_module.GPIO_AVAILABLE
-    try:
-        led_module.GPIO_AVAILABLE = False
-        led_module.set_led(True)
-        led_module.set_led(False)
-    finally:
-        led_module.GPIO_AVAILABLE = original
-
-
-def test_set_led_calls_gpio_output_when_available() -> None:
-    import slopstop.led as led_module
-    mock_gpio = MagicMock()
-    mock_gpio.HIGH = 1
-    mock_gpio.LOW = 0
-    original = led_module.GPIO_AVAILABLE
-    original_gpio = getattr(led_module, "GPIO", None)
-    try:
-        led_module.GPIO_AVAILABLE = True
-        led_module.GPIO = mock_gpio
-        led_module.set_led(True)
-        mock_gpio.output.assert_called_once_with(led_module.LED_PIN, mock_gpio.HIGH)
-    finally:
-        led_module.GPIO_AVAILABLE = original
-        if original_gpio is not None:
-            led_module.GPIO = original_gpio
-
-
-def test_led_daemon_turns_on_when_unbound_active() -> None:
-    from slopstop.led import run_led_daemon
-    calls = []
-
-    def fake_sleep(seconds):
-        # After 2 sleep calls, raise to exit the loop
-        calls.append(seconds)
-        if len(calls) >= 8:  # 3 startup blinks (6 sleeps) + 2 loop iterations
-            raise KeyboardInterrupt
-
-    with patch("slopstop.led.is_unbound_running", return_value=True), \
-         patch("slopstop.led.set_led") as mock_led, \
-         patch("slopstop.led.setup_gpio"), \
-         patch("time.sleep", side_effect=fake_sleep):
-        try:
-            run_led_daemon()
-        except KeyboardInterrupt:
-            pass
-
-    led_states = [c.args[0] for c in mock_led.call_args_list]
-    assert True in led_states
-
-
-def test_led_daemon_turns_off_when_unbound_inactive() -> None:
-    from slopstop.led import run_led_daemon
-    call_count = [0]
-
-    def fake_sleep(seconds):
-        call_count[0] += 1
-        if call_count[0] >= 8:
-            raise KeyboardInterrupt
-
-    with patch("slopstop.led.is_unbound_running", return_value=False), \
-         patch("slopstop.led.set_led") as mock_led, \
-         patch("slopstop.led.setup_gpio"), \
-         patch("time.sleep", side_effect=fake_sleep):
-        try:
-            run_led_daemon()
-        except KeyboardInterrupt:
-            pass
-
-    # Last steady-state call should be False (LED off)
-    steady_calls = [c.args[0] for c in mock_led.call_args_list
-                    if c == mock_led.call_args_list[-1]]
-    assert mock_led.call_args_list[-1].args[0] is False
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-```bash
-pytest tests/test_led.py -v
-```
-
-Expected: `ImportError: No module named 'slopstop.led'`
-
-- [ ] **Step 3: Write `firmware/src/slopstop/led.py`**
-
-```python
-import os
-import time
-
-try:
-    import RPi.GPIO as GPIO
-    GPIO_AVAILABLE = True
-except ImportError:
-    GPIO_AVAILABLE = False
-
-from .dns_control import is_unbound_running
-
-LED_PIN = int(os.environ.get("SLOPSTOP_LED_PIN", "17"))
-
-
-def setup_gpio() -> None:
-    if not GPIO_AVAILABLE:
-        return
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(LED_PIN, GPIO.OUT)
-
-
-def set_led(state: bool) -> None:
-    if not GPIO_AVAILABLE:
-        return
-    GPIO.output(LED_PIN, GPIO.HIGH if state else GPIO.LOW)
-
-
-def run_led_daemon() -> None:
-    setup_gpio()
-    # Startup blink: 3 flashes
-    for _ in range(3):
-        set_led(True)
-        time.sleep(0.2)
-        set_led(False)
-        time.sleep(0.2)
-    # Steady-state loop
-    while True:
-        set_led(is_unbound_running())
-        time.sleep(5)
-```
-
-- [ ] **Step 4: Run tests to verify they pass**
-
-```bash
-pytest tests/test_led.py -v
-```
-
-Expected: 4 tests PASSED.
-
-- [ ] **Step 5: Run the full test suite to confirm nothing regressed**
-
-```bash
-pytest -v
-```
-
-Expected: all tests PASSED.
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add firmware/src/slopstop/led.py firmware/tests/test_led.py
-git commit -m "feat: LED status daemon"
-```
-
----
-
-## Task 10: Systemd service files and install script
+## Task 9: Systemd service files and install script
 
 **Files:**
 - Create: `firmware/systemd/slopstop-admin.service`
-- Create: `firmware/systemd/slopstop-led.service`
 - Create: `firmware/systemd/install.sh`
 
-No unit tests for this task — the services are verified by the integration test in Task 11.
+No unit tests for this task — the service is verified by the integration test in Task 10.
 
 - [ ] **Step 1: Write `firmware/systemd/slopstop-admin.service`**
 
@@ -1704,25 +1531,7 @@ User=root
 WantedBy=multi-user.target
 ```
 
-- [ ] **Step 2: Write `firmware/systemd/slopstop-led.service`**
-
-```ini
-[Unit]
-Description=slopstop LED Status Daemon
-After=slopstop-admin.service
-
-[Service]
-ExecStart=/usr/bin/python3 -c "from slopstop.led import run_led_daemon; run_led_daemon()"
-WorkingDirectory=/opt/slopstop/firmware
-Environment="PYTHONPATH=/opt/slopstop/firmware/src"
-Restart=always
-User=root
-
-[Install]
-WantedBy=multi-user.target
-```
-
-- [ ] **Step 3: Write `firmware/systemd/install.sh`**
+- [ ] **Step 2: Write `firmware/systemd/install.sh`**
 
 ```bash
 #!/usr/bin/env bash
@@ -1751,31 +1560,30 @@ init_db(Path('/var/lib/slopstop/slopstop.db'))
 
 echo "==> Installing systemd units..."
 cp "$INSTALL_DIR/systemd/slopstop-admin.service" /etc/systemd/system/
-cp "$INSTALL_DIR/systemd/slopstop-led.service" /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable slopstop-admin slopstop-led
-systemctl start slopstop-admin slopstop-led
+systemctl enable slopstop-admin
+systemctl start slopstop-admin
 
 echo "==> Done. Admin UI running at http://$(hostname -I | awk '{print $1}')"
 echo "    Set your router's DNS server to that IP."
 ```
 
-- [ ] **Step 4: Make install script executable**
+- [ ] **Step 3: Make install script executable**
 
 ```bash
 chmod +x firmware/systemd/install.sh
 ```
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add firmware/systemd/
-git commit -m "feat: systemd service files and install script"
+git commit -m "feat: systemd service file and install script"
 ```
 
 ---
 
-## Task 11: End-to-end integration test (Pi or Docker)
+## Task 10: End-to-end integration test (Pi or Docker)
 
 **Files:**
 - Create: `firmware/tests/test_integration.py`
@@ -1869,5 +1677,4 @@ git commit -m "test: end-to-end integration tests for DNS blocking"
 - `SLOPSTOP_PRESET_DIR` env var is set in each preset test that needs it — tests are independent.
 - The `app.py` in Task 8 replaces the version from Task 7 completely — both versions shown in full, no "similar to" shortcuts.
 - "Recent block events" from the spec is explicitly deferred (noted at top of plan).
-- Hardware LED GPIO pin 17 is the default; configurable via `SLOPSTOP_LED_PIN` env var.
 - Password recovery path (re-flash SD card) is not implemented in this plan — it is a physical operation, not a software one.
