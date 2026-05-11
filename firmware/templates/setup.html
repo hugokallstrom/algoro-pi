@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+  <h1>slopstop — first-time setup</h1>
+  <p style="font-size:0.9rem;color:#555;margin-bottom:1.5rem">
+    Choose an admin password. <strong>This is the only way to manage the device.</strong>
+    If you forget it, the only recovery is re-flashing the SD card.
+  </p>
+  <form method="post" action="/setup">
+    <label for="password">Password (min 5 characters)</label>
+    <input type="password" id="password" name="password" autofocus required minlength="5">
+
+    <label for="confirm">Confirm password</label>
+    <input type="password" id="confirm" name="confirm" required minlength="5">
+
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <button type="submit">Set password</button>
+  </form>
+</main>
+{% endblock %}

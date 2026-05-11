@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 
 from slopstop.admin.routes.auth_routes import router as auth_router
 from slopstop.admin.routes.blocklist_routes import router as blocklist_router
+from slopstop.admin.routes.setup_routes import router as setup_router
 from slopstop.blocklist import ACTIVE_BLOCKLIST_PATH
 from slopstop.dns_control import DEFAULT_TEMPLATE_DIR, UNBOUND_CONF_PATH
 
@@ -26,5 +27,6 @@ def create_app(
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
     app.include_router(auth_router)
     app.include_router(blocklist_router)
+    app.include_router(setup_router)
 
     return app
