@@ -107,3 +107,12 @@ def test_add_empty_domain_is_rejected(authed_client: TestClient) -> None:
     with patch("slopstop.admin.routes.blocklist_routes.reload_dns"):
         resp = authed_client.post("/blocklist/add", data={"domain": ""})
     assert resp.status_code in (200, 422)
+
+
+def test_remove_form_has_confirmation_dialog(authed_client: TestClient, db_path: Path) -> None:
+    add_domain("instagram.com", db_path)
+    resp = authed_client.get("/")
+    assert resp.status_code == 200
+    # Remove forms must require a JS confirm before submitting
+    assert "onsubmit=\"return confirm" in resp.text
+    assert "instagram.com" in resp.text

@@ -26,7 +26,7 @@
   {% for d in domains %}
   <li>
     <span>{{ d.domain }}{% if d.preset %} <small style="color:#999">({{ d.preset }})</small>{% endif %}</span>
-    <form method="post" action="/blocklist/remove">
+    <form method="post" action="/blocklist/remove" onsubmit="return confirm('Remove {{ d.domain }} from the blocklist?');">
       <input type="hidden" name="domain" value="{{ d.domain }}">
       <button type="submit" class="danger">Remove</button>
     </form>
