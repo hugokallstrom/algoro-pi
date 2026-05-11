@@ -61,3 +61,49 @@ def test_logout_clears_session(authed_client: TestClient) -> None:
     # After logout, root redirects to login
     resp2 = authed_client.get("/", follow_redirects=False)
     assert resp2.status_code == 302
+
+
+from unittest.mock import patch
+
+from slopstop.blocklist import add_domain, list_domains
+
+
+def test_dashboard_shows_blocked_domain_count(authed_client: TestClient, db_path: Path) -> None:
+    add_domain("instagram.com", db_path)
+    add_domain("tiktok.com", db_path)
+    resp = authed_client.get("/")
+    assert resp.status_code == 200
+    assert "instagram.com" in resp.text
+    assert "tiktok.com" in resp.text
+
+
+def test_add_domain_requires_auth(client: TestClient) -> None:
+    resp = client.post("/blocklist/add", data={"domain": "reddit.com"}, follow_redirects=False)
+    assert resp.status_code == 302
+
+
+def test_add_domain_when_authenticated(authed_client: TestClient, db_path: Path) -> None:
+    with patch("slopstop.admin.routes.blocklist_routes.reload_dns"):
+        resp = authed_client.post(
+            "/blocklist/add", data={"domain": "reddit.com"}, follow_redirects=True
+        )
+    assert resp.status_code == 200
+    domains = {d["domain"] for d in list_domains(db_path)}
+    assert "reddit.com" in domains
+
+
+def test_remove_domain_when_authenticated(authed_client: TestClient, db_path: Path) -> None:
+    add_domain("facebook.com", db_path)
+    with patch("slopstop.admin.routes.blocklist_routes.reload_dns"):
+        resp = authed_client.post(
+            "/blocklist/remove", data={"domain": "facebook.com"}, follow_redirects=True
+        )
+    assert resp.status_code == 200
+    domains = {d["domain"] for d in list_domains(db_path)}
+    assert "facebook.com" not in domains
+
+
+def test_add_empty_domain_is_rejected(authed_client: TestClient) -> None:
+    with patch("slopstop.admin.routes.blocklist_routes.reload_dns"):
+        resp = authed_client.post("/blocklist/add", data={"domain": ""})
+    assert resp.status_code in (200, 422)

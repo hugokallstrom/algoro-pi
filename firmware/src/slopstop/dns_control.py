@@ -32,11 +32,14 @@ def reload_unbound() -> None:
 
 
 def is_unbound_running() -> bool:
-    result = subprocess.run(
-        ["systemctl", "is-active", "unbound"],
-        capture_output=True,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            ["systemctl", "is-active", "unbound"],
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        return False
     return result.stdout.strip() == "active"
 
 
