@@ -1,0 +1,30 @@
+# Facebook / Instagram / Threads
+facebook.com
+instagram.com
+cdninstagram.com
+fbcdn.net
+threads.net
+# Twitter / X
+twitter.com
+t.co
+twimg.com
+x.com
+# TikTok
+tiktok.com
+tiktokcdn.com
+tiktokv.com
+# Reddit
+reddit.com
+redd.it
+redditstatic.com
+redditmedia.com
+reddituploads.com
+# Snapchat
+snapchat.com
+sc-cdn.net
+# Pinterest
+pinterest.com
+pinimg.com
+# LinkedIn
+linkedin.com
+licdn.com

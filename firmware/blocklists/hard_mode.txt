@@ -1,0 +1,46 @@
+# === Social + News (same as social_news) ===
+facebook.com
+instagram.com
+cdninstagram.com
+fbcdn.net
+threads.net
+twitter.com
+t.co
+twimg.com
+x.com
+tiktok.com
+tiktokcdn.com
+tiktokv.com
+reddit.com
+redd.it
+redditstatic.com
+redditmedia.com
+reddituploads.com
+snapchat.com
+sc-cdn.net
+pinterest.com
+pinimg.com
+linkedin.com
+licdn.com
+nytimes.com
+theguardian.com
+bbc.com
+bbc.co.uk
+cnn.com
+dn.se
+svt.se
+aftonbladet.se
+expressen.se
+# === Video / streaming ===
+youtube.com
+googlevideo.com
+ytimg.com
+youtu.be
+netflix.com
+nflxvideo.net
+twitch.tv
+twitchsvc.net
+# === Gaming / chat ===
+discord.com
+discordapp.com
+discordapp.net
