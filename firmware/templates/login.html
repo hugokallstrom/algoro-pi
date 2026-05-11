@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+  <h1>slopstop</h1>
+  <form method="post" action="/login">
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" autofocus required>
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+    <button type="submit">Unlock</button>
+  </form>
+</main>
+{% endblock %}
