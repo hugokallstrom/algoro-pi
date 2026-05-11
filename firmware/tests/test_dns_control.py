@@ -68,9 +68,29 @@ def test_reload_dns_calls_all_three_steps(tmp_path: Path) -> None:
     blocklist_path = tmp_path / "blocklist.txt"
     conf_path = tmp_path / "slopstop.conf"
 
-    with patch("slopstop.dns_control.reload_unbound") as mock_reload:
+    with patch("slopstop.dns_control.is_unbound_running", return_value=True), \
+         patch("slopstop.dns_control.reload_unbound") as mock_reload:
         reload_dns(db_path, blocklist_path, conf_path, TEMPLATE_DIR)
         mock_reload.assert_called_once()
 
     assert "reddit.com" in blocklist_path.read_text()
+    assert 'local-zone: "reddit.com." always_nxdomain' in conf_path.read_text()
+
+
+def test_reload_dns_skips_reload_when_unbound_not_running(tmp_path: Path) -> None:
+    db_path = tmp_path / "test.db"
+    from slopstop.db import init_db
+    from slopstop.blocklist import add_domain
+    init_db(db_path)
+    add_domain("reddit.com", db_path)
+
+    blocklist_path = tmp_path / "blocklist.txt"
+    conf_path = tmp_path / "slopstop.conf"
+
+    with patch("slopstop.dns_control.is_unbound_running", return_value=False), \
+         patch("slopstop.dns_control.reload_unbound") as mock_reload:
+        reload_dns(db_path, blocklist_path, conf_path, TEMPLATE_DIR)
+        mock_reload.assert_not_called()
+
+    # Conf is still written so it's picked up when Unbound starts
     assert 'local-zone: "reddit.com." always_nxdomain' in conf_path.read_text()

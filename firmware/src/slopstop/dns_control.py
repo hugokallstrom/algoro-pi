@@ -51,4 +51,5 @@ def reload_dns(
 ) -> None:
     export_to_file(db_path, blocklist_path)
     generate_unbound_conf(blocklist_path, unbound_conf_path, template_dir)
-    reload_unbound()
+    if is_unbound_running():
+        reload_unbound()
