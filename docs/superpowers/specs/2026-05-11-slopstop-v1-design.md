@@ -6,7 +6,7 @@
 
 ## Summary
 
-A pre-configured Raspberry Pi appliance that makes a chosen set of websites unreachable for every device on the buyer's home network. DNS-level blocking, set once, enforced always. The hardware is the commitment device: meaningful friction (physical button + cooldown) to ever change the configuration.
+A pre-configured Raspberry Pi appliance that makes a chosen set of websites unreachable for every device on the buyer's home network. DNS-level blocking, set once, enforced always. The admin interface is password-protected; without the password, there is no way to change the configuration without re-flashing the device.
 
 Sold in Sweden first as a finished product, founder-fulfilled. EU compliance scoped to a single country for the beta.
 
@@ -19,7 +19,7 @@ Every existing self-control tool can be disabled in under 30 seconds by the pers
 - Pi-hole — log in, click "disable for 5 minutes."
 - iOS Screen Time — multiple known trivial bypasses; adults rarely apply it to themselves.
 
-Bypass-resistance is the missing primitive. A device the user *physically* cannot disable in 30 seconds is qualitatively different from any software solution.
+Bypass-resistance is the missing primitive. A device where changing config requires knowing a password — and where forgetting the password means re-flashing hardware — is qualitatively different from any software solution.
 
 ## Target user (v1)
 
@@ -38,41 +38,24 @@ Sits alongside the digital-minimalism movement, not the productivity-app market.
 ### Block model
 
 - Always-on DNS-level blocking of a chosen set of sites.
-- No timers, no schedules — the answer is no.
+- No timers, no schedules.
 - Curated presets at setup: *Hard Mode*, *Social Only*, *Social + News*, *Custom*.
-- User may edit the list later, subject to the lock model.
-
-### Lock model (v1: solo only)
-
-To change the blocklist, disable the service, or unblock a site, the user follows a two-touch sequence:
-
-1. Request the change in the web UI. UI tells the user: "press the physical button to begin a cooldown of N minutes."
-2. Press the physical button → cooldown starts. LED indicates cooldown is active. Pending change is held in a queue.
-3. After cooldown elapses, LED indicates "ready to confirm."
-4. Press the physical button **again** to commit the change.
-
-If step 4 is not performed within a confirm window (e.g. 1 hour after cooldown ends), the pending change is discarded silently.
-
-The default cooldown is 30 minutes, configurable at first setup. Reducing the cooldown later itself requires the cooldown to elapse — you can't shortcut your way to a shorter cooldown.
-
-Two touches are deliberate: the first lets the user commit while still feeling the urge; the second forces a deliberate decision *after* the urge has passed. A single-touch-then-wait pattern would let an impulsive request silently complete later, which defeats the device's purpose.
-
-Partner mode (delegate the unlock password to a trusted third party) is **deferred to v2**.
+- Password required for access.
 
 ### Setup UX (the differentiator)
 
 1. User plugs in power + ethernet. LED indicates ready.
 2. User connects to the Pi's setup WiFi (SSID like `slopstop-XXXX`) or scans the QR code on the box.
-3. A mobile-friendly captive web wizard runs through:
+3. A captive web wizard runs through:
    - Pick preset (or custom list)
-   - Set cooldown duration
+   - Set admin password (the only way to change config later)
    - Auto-detect router brand from MAC OUI / DHCP signals; provide tailored "set this Pi as your DNS" instructions, with a manual fallback
 4. Wizard confirms blocking is live by issuing a test DNS request to a blocked domain.
 5. Done. Target: under 5 minutes from box opening to working block.
 
 ### Day-to-day config UI
 
-A local web page at the Pi's IP. Shows current status, the blocklist, recent block events. Any editing action triggers the lock model (button + cooldown).
+A local web page at the Pi's IP, protected by the admin password set during setup. Shows current status, the blocklist, recent block events. If the user loses or forgets their password, the only recovery path is re-flashing the SD card — this is intentional.
 
 ## Architecture
 
@@ -81,8 +64,7 @@ A local web page at the Pi's IP. Shows current status, the blocklist, recent blo
 - **Primary:** Raspberry Pi Zero 2 W
 - **Fallback SKU:** Pi 3A+ or generic SBC (in case of Pi shortage — recent history makes this likely)
 - Custom or off-the-shelf enclosure with:
-  - Multi-color status LED
-  - Single tactile button (lock-model actions)
+  - Single status LED
 - USB-C power input
 - Ethernet preferred (USB-Ethernet adapter or HAT); WiFi fallback
 - Pre-flashed, sealed SD card. Buyer never touches a terminal or imager.
@@ -93,7 +75,6 @@ A local web page at the Pi's IP. Shows current status, the blocklist, recent blo
 - **Admin web app:** small FastAPI backend + HTMX or SvelteKit frontend, served locally
 - **Setup wizard:** captive-portal-style app served on the setup WiFi
 - **Blocklist update channel:** signed pulls from a curated update server
-- **Button + LED daemon:** Python service handling GPIO + cooldown state
 
 ### Data flow
 
@@ -104,7 +85,7 @@ A local web page at the Pi's IP. Shows current status, the blocklist, recent blo
 
 ### Component boundaries
 
-- **Firmware (OSS):** DNS stack config, admin web app, setup wizard, button/LED daemon. License: AGPLv3 (protects against forks running as paid services).
+- **Firmware (OSS):** DNS stack config, admin web app, setup wizard, LED status daemon. License: AGPLv3 (protects against forks running as paid services).
 - **Proprietary:** curated blocklist contents, setup wizard polish/copy/UX assets, brand assets, the blocklist update server.
 
 The OSS firmware can be audited and re-flashed by anyone who wants to. The curated blocklist + setup polish are the moat.
@@ -122,7 +103,6 @@ The OSS firmware can be audited and re-flashed by anyone who wants to. The curat
 ## Business model
 
 - **Hardware:** one-time sale, working range €89–€109 incl. VAT
-- **Optional subscription:** €3–€5/mo for ongoing curated blocklist updates. Without it, the user keeps the last-pulled list — device still works, just goes stale as social CDNs shift.
 - **Open-core firmware** — privacy-conscious buyers can audit and self-host the update server if they want to.
 - **BOM target:** €25–€35 fully landed (Pi, enclosure, PSU, SD card, cable, packaging). Margin sufficient to absorb a meaningful support load.
 
@@ -170,8 +150,6 @@ Out of scope for this spec.
 - Exact enclosure: off-the-shelf vs custom-injection-molded (off-the-shelf for beta, custom later)
 - Whether the curated blocklist is community-editable or strictly curated (default: strictly curated for v1, OSS list contributions accepted)
 - AGPLv3 vs MIT for firmware license (current default: AGPLv3)
-- Whether to offer an "emergency unlock" override (current default: no — defeats the purpose)
-- Final cooldown default (proposing 30 minutes)
 - Whether ethernet adapter ships in the box or is BYO (proposing: in the box, simplifies setup)
 
 ## Success criteria (v1 beta)
@@ -182,7 +160,7 @@ Out of scope for this spec.
 - ≤10% return rate
 - Either strong qualitative confirmation of "I tried everything else, this is the one that stuck" — or strong disconfirmation, equally valuable
 
-The 30-day-active metric is the only externally observable signal from the device. It tells us "the box is still plugged in and pulling updates" — not what is or isn't being blocked. No usage data, no DNS query logging, no telemetry beyond that single signed update fetch.
+The 30-day-active metric is the only externally observable signal from the device. It tells us "the box is still plugged in and pulling updates" — not what is or isn't being blocked. No usage data, no DNS query logging, no telemetry beyond that single signed update fetch. "Device active at 30 days" is a reasonable proxy for "user didn't re-flash it to remove the blocking."
 
 ## Why this can work
 
@@ -197,5 +175,5 @@ The 30-day-active metric is the only externally observable signal from the devic
 - **Market size.** Dumb-phone-adjacent buyer pool may be too small even in EU. Mitigation: spec includes early customer-conversation phase; if the pull isn't there, kill it before scaling.
 - **Pi supply shocks.** History of shortages. Mitigation: fallback SKU pre-designed.
 - **Support tax.** Non-technical buyers will email about WiFi, DNS, router weirdness. Mitigation: budget 1 ticket per 10 units; setup wizard auto-detects router brand to head off the most common questions.
-- **Bypass via router reset.** A determined user can reset their router DNS in 60 seconds. Mitigation: this is acceptable — the friction is the product, not absolute prevention. Anyone resetting their router has clearly made a deliberate choice, not an impulsive one.
+- **Bypass paths exist.** A determined user can (a) reset their router DNS in ~60 seconds, or (b) re-flash the Pi SD card in ~10 minutes. Mitigation: both are acceptable — they require deliberate, non-impulsive effort. The product targets impulsive slop consumption, not adversarial self-sabotage.
 - **Compliance surprise.** Hardware compliance has unknown unknowns. Mitigation: single-country beta limits the blast radius; consult a Swedish compliance contractor before first commercial sale.
