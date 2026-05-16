@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -30,3 +31,11 @@ def create_app(
     app.include_router(setup_router)
 
     return app
+
+
+app = create_app(
+    db_path=Path(os.environ.get("ALGORO_DB_PATH", "/var/lib/algoro/algoro.db")),
+    blocklist_path=Path(os.environ.get("ALGORO_BLOCKLIST_PATH", str(ACTIVE_BLOCKLIST_PATH))),
+    unbound_conf_path=Path(os.environ.get("ALGORO_UNBOUND_CONF", str(UNBOUND_CONF_PATH))),
+    template_dir=Path(os.environ.get("ALGORO_DNS_TEMPLATE_DIR", str(DEFAULT_TEMPLATE_DIR))),
+)
