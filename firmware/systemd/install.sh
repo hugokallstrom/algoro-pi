@@ -25,7 +25,7 @@ init_db(Path('/var/lib/algoro/algoro.db'))
 "
 
 echo "==> Installing systemd units..."
-cp "$INSTALL_DIR/systemd/algoro-admin.service" /etc/systemd/system/
+ln -sf "$INSTALL_DIR/systemd/algoro-admin.service" /etc/systemd/system/algoro-admin.service
 systemctl daemon-reload
 systemctl enable algoro-admin
 systemctl start algoro-admin
