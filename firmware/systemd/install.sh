@@ -1,24 +1,26 @@
 #!/usr/bin/env bash
 # Run as root on the Pi. Assumes:
 # - repo is checked out at /opt/algoro
-# - Python 3.11+, pip, unbound, dnscrypt-proxy are installed
+# - Python 3.11+, python3-venv, unbound, dnscrypt-proxy are installed
 set -euo pipefail
 
 INSTALL_DIR=/opt/algoro/firmware
 DATA_DIR=/var/lib/algoro
+VENV=/opt/algoro/venv
+
+echo "==> Creating virtualenv..."
+python3 -m venv "$VENV"
 
 echo "==> Installing Python package..."
-pip install -e "$INSTALL_DIR"
+"$VENV/bin/pip" install -e "$INSTALL_DIR"
 
 echo "==> Creating data directory..."
 mkdir -p "$DATA_DIR"
 
 echo "==> Initialising database..."
-python3 -c "
+"$VENV/bin/python" -c "
 from pathlib import Path
 from algoro.db import init_db
-import os
-os.environ['ALGORO_DB_PATH'] = '/var/lib/algoro/algoro.db'
 init_db(Path('/var/lib/algoro/algoro.db'))
 "
 
