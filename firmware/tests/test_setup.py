@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from slopstop.admin.app import create_app
-from slopstop.auth import is_password_set
+from algoro.admin.app import create_app
+from algoro.auth import is_password_set
 
 
 @pytest.fixture

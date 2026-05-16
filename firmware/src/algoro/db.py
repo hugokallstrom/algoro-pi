@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path("/var/lib/slopstop/slopstop.db")
+DB_PATH = Path("/var/lib/algoro/algoro.db")
 
 
 def get_db(path: Path = DB_PATH) -> sqlite3.Connection:

@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from slopstop.admin.deps import require_auth
-from slopstop.blocklist import add_domain, list_domains, remove_domain
-from slopstop.dns_control import is_unbound_running, reload_dns
+from algoro.admin.deps import require_auth
+from algoro.blocklist import add_domain, list_domains, remove_domain
+from algoro.dns_control import is_unbound_running, reload_dns
 
 router = APIRouter()
 templates = Jinja2Templates(

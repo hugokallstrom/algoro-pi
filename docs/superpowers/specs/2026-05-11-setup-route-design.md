@@ -1,8 +1,8 @@
-# slopstop `/setup` route — minimal first-boot bootstrap
+# algoro `/setup` route — minimal first-boot bootstrap
 
 **Status:** design (pre-implementation)
 **Date:** 2026-05-11
-**Parent:** [2026-05-11-slopstop-v1-design.md](2026-05-11-slopstop-v1-design.md) — section "Setup UX"
+**Parent:** [2026-05-11-algoro-v1-design.md](2026-05-11-algoro-v1-design.md) — section "Setup UX"
 
 ## Summary
 
@@ -64,14 +64,14 @@ HTML attributes are hints. Server-side validation is the source of truth:
 
 ### New files
 
-- `firmware/src/slopstop/admin/routes/setup_routes.py` — GET/POST `/setup`
+- `firmware/src/algoro/admin/routes/setup_routes.py` — GET/POST `/setup`
 - `firmware/templates/setup.html` — extends `base.html`, contains the two-field form, shows inline error
 
 ### Modified files
 
-- `firmware/src/slopstop/admin/app.py` — register the setup router
-- `firmware/src/slopstop/admin/deps.py` — `require_auth` adds a pre-check: if `is_password_set()` is False, redirect to `/setup` instead of `/login`
-- `firmware/src/slopstop/admin/routes/auth_routes.py` — `login_page` (GET) and `login` (POST) both add a pre-check at the top: if `is_password_set()` is False, redirect to `/setup`
+- `firmware/src/algoro/admin/app.py` — register the setup router
+- `firmware/src/algoro/admin/deps.py` — `require_auth` adds a pre-check: if `is_password_set()` is False, redirect to `/setup` instead of `/login`
+- `firmware/src/algoro/admin/routes/auth_routes.py` — `login_page` (GET) and `login` (POST) both add a pre-check at the top: if `is_password_set()` is False, redirect to `/setup`
 
 ### Data model
 

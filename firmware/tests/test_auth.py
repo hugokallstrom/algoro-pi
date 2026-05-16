@@ -1,5 +1,5 @@
 from pathlib import Path
-from slopstop.auth import (
+from algoro.auth import (
     hash_password,
     verify_password,
     set_password,

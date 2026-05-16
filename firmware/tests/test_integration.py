@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from slopstop.auth import set_password
-from slopstop.blocklist import add_domain, export_to_file
-from slopstop.db import init_db
-from slopstop.dns_control import (
+from algoro.auth import set_password
+from algoro.blocklist import add_domain, export_to_file
+from algoro.db import init_db
+from algoro.dns_control import (
     DEFAULT_TEMPLATE_DIR,
     UNBOUND_CONF_PATH,
     generate_unbound_conf,
@@ -23,7 +23,7 @@ def test_blocked_domain_returns_nxdomain(tmp_path: Path) -> None:
     """
     db_path = tmp_path / "test.db"
     init_db(db_path)
-    add_domain("slopstop-integration-test-blocked.invalid", db_path)
+    add_domain("algoro-integration-test-blocked.invalid", db_path)
 
     blocklist_path = tmp_path / "blocklist.txt"
     export_to_file(db_path, blocklist_path)
@@ -32,7 +32,7 @@ def test_blocked_domain_returns_nxdomain(tmp_path: Path) -> None:
     time.sleep(0.5)  # give Unbound a moment to reload
 
     try:
-        socket.getaddrinfo("slopstop-integration-test-blocked.invalid", None)
+        socket.getaddrinfo("algoro-integration-test-blocked.invalid", None)
         pytest.fail("Expected socket.gaierror (NXDOMAIN) but got a result")
     except socket.gaierror:
         pass  # expected: domain is blocked

@@ -6,7 +6,7 @@
 
 **Architecture:** A new `setup_routes.py` module owns GET/POST `/setup`. `auth_routes.py` and `deps.py` each add a single pre-check: if `is_password_set()` is False, redirect to `/setup` instead of `/login`. After successful password set, the route stores the password, creates a session, sets the session cookie, and redirects to `/`. Once a password exists, GET and POST on `/setup` are inert 302s to `/login`.
 
-**Tech Stack:** Python 3.11+, FastAPI, Jinja2, existing `slopstop.auth` module (`hash_password`, `set_password`, `is_password_set`, `create_session_token`). No new dependencies.
+**Tech Stack:** Python 3.11+, FastAPI, Jinja2, existing `algoro.auth` module (`hash_password`, `set_password`, `is_password_set`, `create_session_token`). No new dependencies.
 
 **Spec:** `docs/superpowers/specs/2026-05-11-setup-route-design.md`
 
@@ -16,7 +16,7 @@
 
 ```
 firmware/
-├── src/slopstop/admin/
+├── src/algoro/admin/
 │   ├── app.py                        # MODIFY — register setup router
 │   ├── deps.py                       # MODIFY — require_auth pre-checks is_password_set
 │   └── routes/
@@ -34,9 +34,9 @@ firmware/
 
 **Files:**
 - Create: `firmware/tests/test_setup.py`
-- Create: `firmware/src/slopstop/admin/routes/setup_routes.py`
+- Create: `firmware/src/algoro/admin/routes/setup_routes.py`
 - Create: `firmware/templates/setup.html`
-- Modify: `firmware/src/slopstop/admin/app.py`
+- Modify: `firmware/src/algoro/admin/app.py`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -47,8 +47,8 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from slopstop.admin.app import create_app
-from slopstop.auth import is_password_set
+from algoro.admin.app import create_app
+from algoro.auth import is_password_set
 
 
 @pytest.fixture
@@ -86,7 +86,7 @@ Expected: 404 (route not registered yet).
 {% extends "base.html" %}
 {% block content %}
 <main>
-  <h1>slopstop — first-time setup</h1>
+  <h1>algoro — first-time setup</h1>
   <p style="font-size:0.9rem;color:#555;margin-bottom:1.5rem">
     Choose an admin password. <strong>This is the only way to manage the device.</strong>
     If you forget it, the only recovery is re-flashing the SD card.
@@ -108,7 +108,7 @@ Expected: 404 (route not registered yet).
 {% endblock %}
 ```
 
-- [ ] **Step 4: Write `firmware/src/slopstop/admin/routes/setup_routes.py`**
+- [ ] **Step 4: Write `firmware/src/algoro/admin/routes/setup_routes.py`**
 
 ```python
 from pathlib import Path
@@ -128,7 +128,7 @@ def setup_page(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request, "setup.html", {"error": None})
 ```
 
-- [ ] **Step 5: Register the router in `firmware/src/slopstop/admin/app.py`**
+- [ ] **Step 5: Register the router in `firmware/src/algoro/admin/app.py`**
 
 Replace the existing imports and `create_app` body so that the setup router is included alongside the existing two. The full new file is:
 
@@ -138,11 +138,11 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from slopstop.admin.routes.auth_routes import router as auth_router
-from slopstop.admin.routes.blocklist_routes import router as blocklist_router
-from slopstop.admin.routes.setup_routes import router as setup_router
-from slopstop.blocklist import ACTIVE_BLOCKLIST_PATH
-from slopstop.dns_control import DEFAULT_TEMPLATE_DIR, UNBOUND_CONF_PATH
+from algoro.admin.routes.auth_routes import router as auth_router
+from algoro.admin.routes.blocklist_routes import router as blocklist_router
+from algoro.admin.routes.setup_routes import router as setup_router
+from algoro.blocklist import ACTIVE_BLOCKLIST_PATH
+from algoro.dns_control import DEFAULT_TEMPLATE_DIR, UNBOUND_CONF_PATH
 
 STATIC_DIR = Path(__file__).parent.parent.parent.parent / "static"
 
@@ -178,7 +178,7 @@ Expected: 1 test PASSED.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add firmware/templates/setup.html firmware/src/slopstop/admin/routes/setup_routes.py firmware/src/slopstop/admin/app.py firmware/tests/test_setup.py
+git add firmware/templates/setup.html firmware/src/algoro/admin/routes/setup_routes.py firmware/src/algoro/admin/app.py firmware/tests/test_setup.py
 git commit -m "feat: GET /setup renders password form on fresh device"
 ```
 
@@ -188,8 +188,8 @@ git commit -m "feat: GET /setup renders password form on fresh device"
 
 **Files:**
 - Modify: `firmware/tests/test_setup.py` (add 3 tests)
-- Modify: `firmware/src/slopstop/admin/deps.py`
-- Modify: `firmware/src/slopstop/admin/routes/auth_routes.py`
+- Modify: `firmware/src/algoro/admin/deps.py`
+- Modify: `firmware/src/algoro/admin/routes/auth_routes.py`
 
 - [ ] **Step 1: Write the failing tests** — append to `firmware/tests/test_setup.py`
 
@@ -222,7 +222,7 @@ def test_post_login_redirects_to_setup_when_no_password(fresh_client: TestClient
 
 Expected: the three new tests fail. `GET /` currently 302s to `/login` (not `/setup`); `GET /login` currently 200s; `POST /login` currently 200s with "Invalid password".
 
-- [ ] **Step 3: Update `firmware/src/slopstop/admin/deps.py`** — add `is_password_set` pre-check
+- [ ] **Step 3: Update `firmware/src/algoro/admin/deps.py`** — add `is_password_set` pre-check
 
 Replace the file with:
 
@@ -231,7 +231,7 @@ from fastapi import HTTPException, Request
 
 
 def require_auth(request: Request) -> str:
-    from slopstop.auth import is_password_set, validate_session_token
+    from algoro.auth import is_password_set, validate_session_token
     db_path = request.app.state.db_path
     if not is_password_set(db_path):
         raise HTTPException(status_code=302, headers={"location": "/setup"})
@@ -241,7 +241,7 @@ def require_auth(request: Request) -> str:
     return token
 ```
 
-- [ ] **Step 4: Update `firmware/src/slopstop/admin/routes/auth_routes.py`** — add the same pre-check at the top of `login_page` (GET) and `login` (POST)
+- [ ] **Step 4: Update `firmware/src/algoro/admin/routes/auth_routes.py`** — add the same pre-check at the top of `login_page` (GET) and `login` (POST)
 
 Replace the two route handlers (`login_page` and `login`) with:
 
@@ -249,7 +249,7 @@ Replace the two route handlers (`login_page` and `login`) with:
 @router.get("/login", response_class=HTMLResponse)
 def login_page(request: Request) -> HTMLResponse:
     db_path = request.app.state.db_path
-    from slopstop.auth import is_password_set
+    from algoro.auth import is_password_set
     if not is_password_set(db_path):
         return RedirectResponse(url="/setup", status_code=302)
     return templates.TemplateResponse(request, "login.html", {"error": None})
@@ -258,7 +258,7 @@ def login_page(request: Request) -> HTMLResponse:
 @router.post("/login")
 def login(request: Request, password: str = Form(...)):
     db_path = request.app.state.db_path
-    from slopstop.auth import is_password_set
+    from algoro.auth import is_password_set
     if not is_password_set(db_path):
         return RedirectResponse(url="/setup", status_code=302)
     if not check_password(password, db_path):
@@ -295,7 +295,7 @@ Expected: all existing tests still pass. (The `app` fixture in `test_admin.py` c
 - [ ] **Step 7: Commit**
 
 ```bash
-git add firmware/src/slopstop/admin/deps.py firmware/src/slopstop/admin/routes/auth_routes.py firmware/tests/test_setup.py
+git add firmware/src/algoro/admin/deps.py firmware/src/algoro/admin/routes/auth_routes.py firmware/tests/test_setup.py
 git commit -m "feat: redirect / and /login to /setup when no password is set"
 ```
 
@@ -305,12 +305,12 @@ git commit -m "feat: redirect / and /login to /setup when no password is set"
 
 **Files:**
 - Modify: `firmware/tests/test_setup.py` (add 1 test)
-- Modify: `firmware/src/slopstop/admin/routes/setup_routes.py`
+- Modify: `firmware/src/algoro/admin/routes/setup_routes.py`
 
 - [ ] **Step 1: Write the failing test** — append to `firmware/tests/test_setup.py`
 
 ```python
-from slopstop.auth import check_password, is_password_set
+from algoro.auth import check_password, is_password_set
 
 
 def test_post_setup_stores_password_and_logs_in(fresh_client: TestClient, db_path: Path) -> None:
@@ -336,7 +336,7 @@ def test_post_setup_stores_password_and_logs_in(fresh_client: TestClient, db_pat
 
 Expected: 405 Method Not Allowed (no POST handler registered).
 
-- [ ] **Step 3: Add the POST handler to `firmware/src/slopstop/admin/routes/setup_routes.py`**
+- [ ] **Step 3: Add the POST handler to `firmware/src/algoro/admin/routes/setup_routes.py`**
 
 Replace the file with:
 
@@ -347,7 +347,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from slopstop.auth import create_session_token, is_password_set, set_password
+from algoro.auth import create_session_token, is_password_set, set_password
 
 router = APIRouter()
 templates = Jinja2Templates(
@@ -387,7 +387,7 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add firmware/src/slopstop/admin/routes/setup_routes.py firmware/tests/test_setup.py
+git add firmware/src/algoro/admin/routes/setup_routes.py firmware/tests/test_setup.py
 git commit -m "feat: POST /setup stores password and auto-logs in"
 ```
 
@@ -397,7 +397,7 @@ git commit -m "feat: POST /setup stores password and auto-logs in"
 
 **Files:**
 - Modify: `firmware/tests/test_setup.py` (add 3 tests)
-- Modify: `firmware/src/slopstop/admin/routes/setup_routes.py`
+- Modify: `firmware/src/algoro/admin/routes/setup_routes.py`
 
 - [ ] **Step 1: Write the failing tests** — append to `firmware/tests/test_setup.py`
 
@@ -442,7 +442,7 @@ def test_post_setup_rejects_empty_password(fresh_client: TestClient, db_path: Pa
 
 Expected: `test_post_setup_rejects_mismatched_passwords` and `test_post_setup_rejects_short_password` fail because the current handler stores anything. The empty-password test may or may not fail depending on Form behavior — either way, the next step will make all three pass.
 
-- [ ] **Step 3: Add validation to `firmware/src/slopstop/admin/routes/setup_routes.py`**
+- [ ] **Step 3: Add validation to `firmware/src/algoro/admin/routes/setup_routes.py`**
 
 Replace the `setup_submit` handler:
 
@@ -487,7 +487,7 @@ Expected: all setup tests so far PASSED.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add firmware/src/slopstop/admin/routes/setup_routes.py firmware/tests/test_setup.py
+git add firmware/src/algoro/admin/routes/setup_routes.py firmware/tests/test_setup.py
 git commit -m "feat: validate /setup password (min 5 chars, must match confirm)"
 ```
 
@@ -497,12 +497,12 @@ git commit -m "feat: validate /setup password (min 5 chars, must match confirm)"
 
 **Files:**
 - Modify: `firmware/tests/test_setup.py` (add 2 tests)
-- Modify: `firmware/src/slopstop/admin/routes/setup_routes.py`
+- Modify: `firmware/src/algoro/admin/routes/setup_routes.py`
 
 - [ ] **Step 1: Write the failing tests** — append to `firmware/tests/test_setup.py`
 
 ```python
-from slopstop.auth import set_password as auth_set_password
+from algoro.auth import set_password as auth_set_password
 
 
 def test_get_setup_redirects_to_login_when_password_already_set(db_path: Path) -> None:
@@ -527,7 +527,7 @@ def test_post_setup_does_not_overwrite_existing_password(db_path: Path) -> None:
     assert resp.status_code == 302
     assert "/login" in resp.headers["location"]
     # Original password still works
-    from slopstop.auth import check_password
+    from algoro.auth import check_password
     assert check_password("original", db_path)
     assert not check_password("newpass", db_path)
 ```
@@ -540,7 +540,7 @@ def test_post_setup_does_not_overwrite_existing_password(db_path: Path) -> None:
 
 Expected: both new tests fail. GET `/setup` returns 200; POST `/setup` overwrites the password.
 
-- [ ] **Step 3: Close the route in `firmware/src/slopstop/admin/routes/setup_routes.py`**
+- [ ] **Step 3: Close the route in `firmware/src/algoro/admin/routes/setup_routes.py`**
 
 Add an `is_password_set` pre-check at the top of both handlers. Final file:
 
@@ -551,7 +551,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from slopstop.auth import create_session_token, is_password_set, set_password
+from algoro.auth import create_session_token, is_password_set, set_password
 
 router = APIRouter()
 templates = Jinja2Templates(
@@ -619,7 +619,7 @@ Expected: all tests PASSED.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add firmware/src/slopstop/admin/routes/setup_routes.py firmware/tests/test_setup.py
+git add firmware/src/algoro/admin/routes/setup_routes.py firmware/tests/test_setup.py
 git commit -m "feat: close /setup route once admin password is set"
 ```
 
@@ -636,6 +636,6 @@ git commit -m "feat: close /setup route once admin password is set"
   - `POST /setup` invalid (mismatch / too short / empty): Task 4, tests 1–3
   - `GET /setup` → `/login` when password set: Task 5, test 1
   - `POST /setup` → `/login` (no overwrite) when password set: Task 5, test 2
-- **Type consistency:** `is_password_set`, `set_password`, `create_session_token`, `check_password` are imported from `slopstop.auth` everywhere they appear and match the existing module's signatures.
+- **Type consistency:** `is_password_set`, `set_password`, `create_session_token`, `check_password` are imported from `algoro.auth` everywhere they appear and match the existing module's signatures.
 - **No placeholders.** Every code block is complete; every test has its assertion body.
 - **No regressions:** The existing `app` fixture in `test_admin.py` calls `set_password` *before* creating the app, so `is_password_set()` returns True for those tests and they keep behaving exactly as before. Task 2 Step 6 runs the full suite to verify.

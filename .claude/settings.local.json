@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/bin/pytest tests/test_blocklist.py -v)",
+      "Bash(.venv/bin/pytest tests/test_dns_control.py -v)",
+      "Bash(.venv/bin/pytest tests/test_admin.py -v)",
+      "Bash(.venv/bin/pytest tests/test_admin.py::test_dashboard_shows_blocked_domain_count -v)",
+      "Bash(.venv/bin/pytest -v)",
+      "Bash(kill 44506)",
+      "Read(//private/tmp/slopstop-dev/**)",
+      "Bash(.venv/bin/pytest tests/test_setup.py::test_get_setup_renders_form_when_no_password -v)",
+      "Bash(.venv/bin/pytest tests/test_setup.py -v)",
+      "Bash(.venv/bin/pytest -m \"not integration\")"
+    ]
+  }
+}

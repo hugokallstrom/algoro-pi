@@ -1,4 +1,4 @@
-# slopstop DNS Engine + Admin Web UI — Implementation Plan
+# algoro DNS Engine + Admin Web UI — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -19,7 +19,7 @@ firmware/
 ├── pyproject.toml
 ├── conftest.py                          # shared pytest fixtures
 ├── src/
-│   └── slopstop/
+│   └── algoro/
 │       ├── __init__.py
 │       ├── db.py                        # SQLite init + connection factory
 │       ├── auth.py                      # password hashing + session tokens
@@ -48,7 +48,7 @@ firmware/
 │   ├── social_news.txt
 │   └── hard_mode.txt
 ├── systemd/
-│   ├── slopstop-admin.service
+│   ├── algoro-admin.service
 │   └── install.sh
 └── tests/
     ├── test_db.py
@@ -65,22 +65,22 @@ firmware/
 **Files:**
 - Create: `firmware/pyproject.toml`
 - Create: `firmware/conftest.py`
-- Create: `firmware/src/slopstop/__init__.py`
+- Create: `firmware/src/algoro/__init__.py`
 - Create: `firmware/.gitignore`
 
 - [ ] **Step 1: Create the directory structure**
 
 ```bash
-mkdir -p firmware/src/slopstop/admin/routes
+mkdir -p firmware/src/algoro/admin/routes
 mkdir -p firmware/templates
 mkdir -p firmware/static
 mkdir -p firmware/dns
 mkdir -p firmware/blocklists
 mkdir -p firmware/systemd
 mkdir -p firmware/tests
-touch firmware/src/slopstop/__init__.py
-touch firmware/src/slopstop/admin/__init__.py
-touch firmware/src/slopstop/admin/routes/__init__.py
+touch firmware/src/algoro/__init__.py
+touch firmware/src/algoro/admin/__init__.py
+touch firmware/src/algoro/admin/routes/__init__.py
 ```
 
 - [ ] **Step 2: Write `firmware/pyproject.toml`**
@@ -91,7 +91,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "slopstop"
+name = "algoro"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
@@ -122,7 +122,7 @@ markers = [
 ```python
 import pytest
 from pathlib import Path
-from slopstop.db import init_db
+from algoro.db import init_db
 
 
 @pytest.fixture
@@ -166,7 +166,7 @@ git commit -m "feat: project scaffold for firmware"
 ## Task 2: Database layer
 
 **Files:**
-- Create: `firmware/src/slopstop/db.py`
+- Create: `firmware/src/algoro/db.py`
 - Create: `firmware/tests/test_db.py`
 
 - [ ] **Step 1: Write the failing test**
@@ -175,7 +175,7 @@ git commit -m "feat: project scaffold for firmware"
 ```python
 import sqlite3
 from pathlib import Path
-from slopstop.db import init_db, get_db
+from algoro.db import init_db, get_db
 
 
 def test_init_db_creates_tables(tmp_path: Path) -> None:
@@ -214,15 +214,15 @@ cd firmware
 pytest tests/test_db.py -v
 ```
 
-Expected: `ImportError: No module named 'slopstop.db'`
+Expected: `ImportError: No module named 'algoro.db'`
 
-- [ ] **Step 3: Write `firmware/src/slopstop/db.py`**
+- [ ] **Step 3: Write `firmware/src/algoro/db.py`**
 
 ```python
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path("/var/lib/slopstop/slopstop.db")
+DB_PATH = Path("/var/lib/algoro/algoro.db")
 
 
 def get_db(path: Path = DB_PATH) -> sqlite3.Connection:
@@ -259,7 +259,7 @@ Expected: 3 tests PASSED.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add firmware/src/slopstop/db.py firmware/tests/test_db.py
+git add firmware/src/algoro/db.py firmware/tests/test_db.py
 git commit -m "feat: SQLite database layer"
 ```
 
@@ -268,7 +268,7 @@ git commit -m "feat: SQLite database layer"
 ## Task 3: Auth module
 
 **Files:**
-- Create: `firmware/src/slopstop/auth.py`
+- Create: `firmware/src/algoro/auth.py`
 - Create: `firmware/tests/test_auth.py`
 
 - [ ] **Step 1: Write the failing tests**
@@ -276,7 +276,7 @@ git commit -m "feat: SQLite database layer"
 `firmware/tests/test_auth.py`:
 ```python
 from pathlib import Path
-from slopstop.auth import (
+from algoro.auth import (
     hash_password,
     verify_password,
     set_password,
@@ -334,9 +334,9 @@ def test_new_token_invalidates_old(db_path: Path) -> None:
 pytest tests/test_auth.py -v
 ```
 
-Expected: `ImportError: No module named 'slopstop.auth'`
+Expected: `ImportError: No module named 'algoro.auth'`
 
-- [ ] **Step 3: Write `firmware/src/slopstop/auth.py`**
+- [ ] **Step 3: Write `firmware/src/algoro/auth.py`**
 
 ```python
 import secrets
@@ -413,7 +413,7 @@ Expected: 8 tests PASSED.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add firmware/src/slopstop/auth.py firmware/tests/test_auth.py
+git add firmware/src/algoro/auth.py firmware/tests/test_auth.py
 git commit -m "feat: auth module — password hashing and session tokens"
 ```
 
@@ -422,7 +422,7 @@ git commit -m "feat: auth module — password hashing and session tokens"
 ## Task 4: Blocklist manager
 
 **Files:**
-- Create: `firmware/src/slopstop/blocklist.py`
+- Create: `firmware/src/algoro/blocklist.py`
 - Create: `firmware/tests/test_blocklist.py`
 
 - [ ] **Step 1: Write the failing tests**
@@ -430,7 +430,7 @@ git commit -m "feat: auth module — password hashing and session tokens"
 `firmware/tests/test_blocklist.py`:
 ```python
 from pathlib import Path
-from slopstop.blocklist import (
+from algoro.blocklist import (
     add_domain,
     remove_domain,
     list_domains,
@@ -500,9 +500,9 @@ def test_add_domain_stores_preset(db_path: Path) -> None:
 pytest tests/test_blocklist.py -v
 ```
 
-Expected: `ImportError: No module named 'slopstop.blocklist'`
+Expected: `ImportError: No module named 'algoro.blocklist'`
 
-- [ ] **Step 3: Write `firmware/src/slopstop/blocklist.py`**
+- [ ] **Step 3: Write `firmware/src/algoro/blocklist.py`**
 
 ```python
 import os
@@ -511,10 +511,10 @@ from pathlib import Path
 from .db import get_db
 
 ACTIVE_BLOCKLIST_PATH = Path(
-    os.environ.get("SLOPSTOP_BLOCKLIST_PATH", "/var/lib/slopstop/active_blocklist.txt")
+    os.environ.get("ALGORO_BLOCKLIST_PATH", "/var/lib/algoro/active_blocklist.txt")
 )
 PRESET_DIR = Path(
-    os.environ.get("SLOPSTOP_PRESET_DIR", str(Path(__file__).parent.parent.parent / "blocklists"))
+    os.environ.get("ALGORO_PRESET_DIR", str(Path(__file__).parent.parent.parent / "blocklists"))
 )
 
 
@@ -567,7 +567,7 @@ Expected: 9 tests PASSED.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add firmware/src/slopstop/blocklist.py firmware/tests/test_blocklist.py
+git add firmware/src/algoro/blocklist.py firmware/tests/test_blocklist.py
 git commit -m "feat: blocklist manager — domain CRUD and file export"
 ```
 
@@ -577,7 +577,7 @@ git commit -m "feat: blocklist manager — domain CRUD and file export"
 
 **Files:**
 - Create: `firmware/dns/unbound.conf.j2`
-- Create: `firmware/src/slopstop/dns_control.py`
+- Create: `firmware/src/algoro/dns_control.py`
 - Create: `firmware/tests/test_dns_control.py`
 
 - [ ] **Step 1: Write the failing tests**
@@ -589,7 +589,7 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from slopstop.dns_control import (
+from algoro.dns_control import (
     generate_unbound_conf,
     is_unbound_running,
     reload_unbound,
@@ -602,7 +602,7 @@ TEMPLATE_DIR = Path(__file__).parent.parent / "dns"
 def test_generate_conf_includes_blocked_domains(tmp_path: Path) -> None:
     blocklist = tmp_path / "blocklist.txt"
     blocklist.write_text("instagram.com\ntiktok.com\n")
-    out = tmp_path / "slopstop.conf"
+    out = tmp_path / "algoro.conf"
     generate_unbound_conf(blocklist, out, template_dir=TEMPLATE_DIR)
     conf = out.read_text()
     assert 'local-zone: "instagram.com." always_nxdomain' in conf
@@ -612,7 +612,7 @@ def test_generate_conf_includes_blocked_domains(tmp_path: Path) -> None:
 def test_generate_conf_empty_blocklist_has_no_local_zones(tmp_path: Path) -> None:
     blocklist = tmp_path / "blocklist.txt"
     blocklist.write_text("")
-    out = tmp_path / "slopstop.conf"
+    out = tmp_path / "algoro.conf"
     generate_unbound_conf(blocklist, out, template_dir=TEMPLATE_DIR)
     assert "local-zone" not in out.read_text()
 
@@ -620,7 +620,7 @@ def test_generate_conf_empty_blocklist_has_no_local_zones(tmp_path: Path) -> Non
 def test_generate_conf_skips_blank_lines(tmp_path: Path) -> None:
     blocklist = tmp_path / "blocklist.txt"
     blocklist.write_text("facebook.com\n\nreddit.com\n\n")
-    out = tmp_path / "slopstop.conf"
+    out = tmp_path / "algoro.conf"
     generate_unbound_conf(blocklist, out, template_dir=TEMPLATE_DIR)
     conf = out.read_text()
     assert conf.count("local-zone") == 2
@@ -646,15 +646,15 @@ def test_is_unbound_running_false() -> None:
 
 def test_reload_dns_calls_all_three_steps(tmp_path: Path) -> None:
     db_path = tmp_path / "test.db"
-    from slopstop.db import init_db
-    from slopstop.blocklist import add_domain
+    from algoro.db import init_db
+    from algoro.blocklist import add_domain
     init_db(db_path)
     add_domain("reddit.com", db_path)
 
     blocklist_path = tmp_path / "blocklist.txt"
-    conf_path = tmp_path / "slopstop.conf"
+    conf_path = tmp_path / "algoro.conf"
 
-    with patch("slopstop.dns_control.reload_unbound") as mock_reload:
+    with patch("algoro.dns_control.reload_unbound") as mock_reload:
         reload_dns(db_path, blocklist_path, conf_path, TEMPLATE_DIR)
         mock_reload.assert_called_once()
 
@@ -668,7 +668,7 @@ def test_reload_dns_calls_all_three_steps(tmp_path: Path) -> None:
 pytest tests/test_dns_control.py -v
 ```
 
-Expected: `ImportError: No module named 'slopstop.dns_control'`
+Expected: `ImportError: No module named 'algoro.dns_control'`
 
 - [ ] **Step 3: Write `firmware/dns/unbound.conf.j2`**
 
@@ -694,7 +694,7 @@ forward-zone:
     forward-addr: 127.0.0.1@5353
 ```
 
-- [ ] **Step 4: Write `firmware/src/slopstop/dns_control.py`**
+- [ ] **Step 4: Write `firmware/src/algoro/dns_control.py`**
 
 ```python
 import os
@@ -706,10 +706,10 @@ from jinja2 import Environment, FileSystemLoader
 from .blocklist import export_to_file
 
 UNBOUND_CONF_PATH = Path(
-    os.environ.get("SLOPSTOP_UNBOUND_CONF", "/etc/unbound/unbound.conf.d/slopstop.conf")
+    os.environ.get("ALGORO_UNBOUND_CONF", "/etc/unbound/unbound.conf.d/algoro.conf")
 )
 DEFAULT_TEMPLATE_DIR = Path(
-    os.environ.get("SLOPSTOP_DNS_TEMPLATE_DIR", str(Path(__file__).parent.parent.parent / "dns"))
+    os.environ.get("ALGORO_DNS_TEMPLATE_DIR", str(Path(__file__).parent.parent.parent / "dns"))
 )
 
 
@@ -761,7 +761,7 @@ Expected: 7 tests PASSED.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add firmware/dns/unbound.conf.j2 firmware/src/slopstop/dns_control.py firmware/tests/test_dns_control.py
+git add firmware/dns/unbound.conf.j2 firmware/src/algoro/dns_control.py firmware/tests/test_dns_control.py
 git commit -m "feat: DNS config generation and Unbound control"
 ```
 
@@ -779,13 +779,13 @@ git commit -m "feat: DNS config generation and Unbound control"
 
 ```python
 import os
-from slopstop.blocklist import import_preset
+from algoro.blocklist import import_preset
 
 PRESET_DIR = str(Path(__file__).parent.parent / "blocklists")
 
 
 def test_import_social_only_preset(db_path: Path) -> None:
-    os.environ["SLOPSTOP_PRESET_DIR"] = PRESET_DIR
+    os.environ["ALGORO_PRESET_DIR"] = PRESET_DIR
     count = import_preset("social_only", db_path)
     assert count > 0
     domains = {d["domain"] for d in list_domains(db_path)}
@@ -795,14 +795,14 @@ def test_import_social_only_preset(db_path: Path) -> None:
 
 
 def test_import_preset_sets_preset_field(db_path: Path) -> None:
-    os.environ["SLOPSTOP_PRESET_DIR"] = PRESET_DIR
+    os.environ["ALGORO_PRESET_DIR"] = PRESET_DIR
     import_preset("social_only", db_path)
     domains = list_domains(db_path)
     assert all(d["preset"] == "social_only" for d in domains)
 
 
 def test_import_preset_skips_comment_lines(db_path: Path) -> None:
-    os.environ["SLOPSTOP_PRESET_DIR"] = PRESET_DIR
+    os.environ["ALGORO_PRESET_DIR"] = PRESET_DIR
     count_before = len(list_domains(db_path))
     import_preset("social_only", db_path)
     count_after = len(list_domains(db_path))
@@ -812,10 +812,10 @@ def test_import_preset_skips_comment_lines(db_path: Path) -> None:
 
 
 def test_hard_mode_contains_more_domains_than_social_only(db_path: Path, tmp_path: Path) -> None:
-    os.environ["SLOPSTOP_PRESET_DIR"] = PRESET_DIR
+    os.environ["ALGORO_PRESET_DIR"] = PRESET_DIR
     db_social = tmp_path / "social.db"
     db_hard = tmp_path / "hard.db"
-    from slopstop.db import init_db
+    from algoro.db import init_db
     init_db(db_social)
     init_db(db_hard)
     social_count = import_preset("social_only", db_social)
@@ -976,9 +976,9 @@ git commit -m "feat: preset domain lists (social_only, social_news, hard_mode)"
 ## Task 7: Admin web app — skeleton, auth routes, session middleware
 
 **Files:**
-- Create: `firmware/src/slopstop/admin/app.py`
-- Create: `firmware/src/slopstop/admin/deps.py`
-- Create: `firmware/src/slopstop/admin/routes/auth_routes.py`
+- Create: `firmware/src/algoro/admin/app.py`
+- Create: `firmware/src/algoro/admin/deps.py`
+- Create: `firmware/src/algoro/admin/routes/auth_routes.py`
 - Create: `firmware/templates/base.html`
 - Create: `firmware/templates/login.html`
 - Create: `firmware/static/style.css`
@@ -1001,8 +1001,8 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from slopstop.auth import set_password
-from slopstop.admin.app import create_app
+from algoro.auth import set_password
+from algoro.admin.app import create_app
 
 
 @pytest.fixture
@@ -1050,7 +1050,7 @@ def test_login_with_wrong_password_shows_error(client: TestClient) -> None:
 def test_authenticated_root_renders_dashboard(authed_client: TestClient) -> None:
     resp = authed_client.get("/")
     assert resp.status_code == 200
-    assert "slopstop" in resp.text.lower()
+    assert "algoro" in resp.text.lower()
 
 
 def test_logout_clears_session(authed_client: TestClient) -> None:
@@ -1067,7 +1067,7 @@ def test_logout_clears_session(authed_client: TestClient) -> None:
 pytest tests/test_admin.py -v
 ```
 
-Expected: `ImportError: No module named 'slopstop.admin.app'`
+Expected: `ImportError: No module named 'algoro.admin.app'`
 
 - [ ] **Step 4: Write `firmware/templates/base.html`**
 
@@ -1077,7 +1077,7 @@ Expected: `ImportError: No module named 'slopstop.admin.app'`
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>slopstop</title>
+  <title>algoro</title>
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/htmx.min.js" defer></script>
 </head>
@@ -1093,7 +1093,7 @@ Expected: `ImportError: No module named 'slopstop.admin.app'`
 {% extends "base.html" %}
 {% block content %}
 <main>
-  <h1>slopstop</h1>
+  <h1>algoro</h1>
   <form method="post" action="/login">
     <label for="password">Password</label>
     <input type="password" id="password" name="password" autofocus required>
@@ -1146,14 +1146,14 @@ nav { display: flex; justify-content: space-between; align-items: center; margin
 nav a { font-size: 0.9rem; color: #555; text-decoration: none; }
 ```
 
-- [ ] **Step 7: Write `firmware/src/slopstop/admin/deps.py`**
+- [ ] **Step 7: Write `firmware/src/algoro/admin/deps.py`**
 
 ```python
 from fastapi import HTTPException, Request
 
 
 def require_auth(request: Request) -> str:
-    from slopstop.auth import validate_session_token
+    from algoro.auth import validate_session_token
     token = request.cookies.get("session", "")
     db_path = request.app.state.db_path
     if not token or not validate_session_token(token, db_path):
@@ -1161,7 +1161,7 @@ def require_auth(request: Request) -> str:
     return token
 ```
 
-- [ ] **Step 8: Write `firmware/src/slopstop/admin/routes/auth_routes.py`**
+- [ ] **Step 8: Write `firmware/src/algoro/admin/routes/auth_routes.py`**
 
 ```python
 from fastapi import APIRouter, Depends, Form, Request
@@ -1169,8 +1169,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
-from slopstop.auth import check_password, create_session_token, validate_session_token
-from slopstop.admin.deps import require_auth
+from algoro.auth import check_password, create_session_token, validate_session_token
+from algoro.admin.deps import require_auth
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent.parent.parent / "templates"))
@@ -1198,7 +1198,7 @@ def login(request: Request, password: str = Form(...)):
 
 @router.post("/logout")
 def logout(request: Request, _token: str = Depends(require_auth)):
-    from slopstop.db import get_db
+    from algoro.db import get_db
     db_path = request.app.state.db_path
     with get_db(db_path) as conn:
         conn.execute("DELETE FROM config WHERE key = 'session_token'")
@@ -1207,7 +1207,7 @@ def logout(request: Request, _token: str = Depends(require_auth)):
     return response
 ```
 
-- [ ] **Step 9: Write `firmware/src/slopstop/admin/app.py`**
+- [ ] **Step 9: Write `firmware/src/algoro/admin/app.py`**
 
 ```python
 from pathlib import Path
@@ -1215,9 +1215,9 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from slopstop.blocklist import ACTIVE_BLOCKLIST_PATH
-from slopstop.dns_control import DEFAULT_TEMPLATE_DIR, UNBOUND_CONF_PATH
-from slopstop.admin.routes.auth_routes import router as auth_router
+from algoro.blocklist import ACTIVE_BLOCKLIST_PATH
+from algoro.dns_control import DEFAULT_TEMPLATE_DIR, UNBOUND_CONF_PATH
+from algoro.admin.routes.auth_routes import router as auth_router
 
 STATIC_DIR = Path(__file__).parent.parent.parent.parent / "static"
 
@@ -1251,7 +1251,7 @@ Expected: 7 tests PASSED (blocklist UI tests will be added in Task 8).
 - [ ] **Step 11: Commit**
 
 ```bash
-git add firmware/src/slopstop/admin/ firmware/templates/base.html firmware/templates/login.html firmware/static/ firmware/tests/test_admin.py
+git add firmware/src/algoro/admin/ firmware/templates/base.html firmware/templates/login.html firmware/static/ firmware/tests/test_admin.py
 git commit -m "feat: admin web app skeleton with login/logout"
 ```
 
@@ -1262,8 +1262,8 @@ git commit -m "feat: admin web app skeleton with login/logout"
 **Files:**
 - Create: `firmware/templates/dashboard.html`
 - Create: `firmware/templates/blocklist_row.html`
-- Create: `firmware/src/slopstop/admin/routes/blocklist_routes.py`
-- Modify: `firmware/src/slopstop/admin/app.py` (add blocklist router + root redirect)
+- Create: `firmware/src/algoro/admin/routes/blocklist_routes.py`
+- Modify: `firmware/src/algoro/admin/app.py` (add blocklist router + root redirect)
 - Modify: `firmware/tests/test_admin.py` (add blocklist UI tests)
 
 - [ ] **Step 1: Write the failing tests** — add to `firmware/tests/test_admin.py`
@@ -1271,7 +1271,7 @@ git commit -m "feat: admin web app skeleton with login/logout"
 ```python
 from unittest.mock import patch
 
-from slopstop.blocklist import add_domain, list_domains
+from algoro.blocklist import add_domain, list_domains
 
 
 def test_dashboard_shows_blocked_domain_count(authed_client: TestClient, db_path: Path) -> None:
@@ -1289,7 +1289,7 @@ def test_add_domain_requires_auth(client: TestClient) -> None:
 
 
 def test_add_domain_when_authenticated(authed_client: TestClient, db_path: Path) -> None:
-    with patch("slopstop.admin.routes.blocklist_routes.reload_dns"):
+    with patch("algoro.admin.routes.blocklist_routes.reload_dns"):
         resp = authed_client.post(
             "/blocklist/add", data={"domain": "reddit.com"}, follow_redirects=True
         )
@@ -1300,7 +1300,7 @@ def test_add_domain_when_authenticated(authed_client: TestClient, db_path: Path)
 
 def test_remove_domain_when_authenticated(authed_client: TestClient, db_path: Path) -> None:
     add_domain("facebook.com", db_path)
-    with patch("slopstop.admin.routes.blocklist_routes.reload_dns"):
+    with patch("algoro.admin.routes.blocklist_routes.reload_dns"):
         resp = authed_client.post(
             "/blocklist/remove", data={"domain": "facebook.com"}, follow_redirects=True
         )
@@ -1310,7 +1310,7 @@ def test_remove_domain_when_authenticated(authed_client: TestClient, db_path: Pa
 
 
 def test_add_empty_domain_is_rejected(authed_client: TestClient) -> None:
-    with patch("slopstop.admin.routes.blocklist_routes.reload_dns"):
+    with patch("algoro.admin.routes.blocklist_routes.reload_dns"):
         resp = authed_client.post("/blocklist/add", data={"domain": ""})
     assert resp.status_code in (200, 422)
     # empty domain must not appear in DB
@@ -1331,7 +1331,7 @@ Expected: 404 on GET / (route not registered yet)
 {% extends "base.html" %}
 {% block content %}
 <nav>
-  <h1>slopstop</h1>
+  <h1>algoro</h1>
   <form method="post" action="/logout" style="display:inline">
     <button type="submit" class="danger" style="font-size:0.8rem;padding:0.25rem 0.75rem">Logout</button>
   </form>
@@ -1368,7 +1368,7 @@ Expected: 404 on GET / (route not registered yet)
 {% endblock %}
 ```
 
-- [ ] **Step 4: Write `firmware/src/slopstop/admin/routes/blocklist_routes.py`**
+- [ ] **Step 4: Write `firmware/src/algoro/admin/routes/blocklist_routes.py`**
 
 ```python
 from pathlib import Path
@@ -1377,9 +1377,9 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from slopstop.admin.deps import require_auth
-from slopstop.blocklist import add_domain, list_domains, remove_domain
-from slopstop.dns_control import is_unbound_running, reload_dns
+from algoro.admin.deps import require_auth
+from algoro.blocklist import add_domain, list_domains, remove_domain
+from algoro.dns_control import is_unbound_running, reload_dns
 
 router = APIRouter()
 templates = Jinja2Templates(
@@ -1441,7 +1441,7 @@ def blocklist_remove(
     return RedirectResponse(url="/", status_code=302)
 ```
 
-- [ ] **Step 5: Update `firmware/src/slopstop/admin/app.py`** — add blocklist router
+- [ ] **Step 5: Update `firmware/src/algoro/admin/app.py`** — add blocklist router
 
 ```python
 from pathlib import Path
@@ -1449,10 +1449,10 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from slopstop.blocklist import ACTIVE_BLOCKLIST_PATH
-from slopstop.dns_control import DEFAULT_TEMPLATE_DIR, UNBOUND_CONF_PATH
-from slopstop.admin.routes.auth_routes import router as auth_router
-from slopstop.admin.routes.blocklist_routes import router as blocklist_router
+from algoro.blocklist import ACTIVE_BLOCKLIST_PATH
+from algoro.dns_control import DEFAULT_TEMPLATE_DIR, UNBOUND_CONF_PATH
+from algoro.admin.routes.auth_routes import router as auth_router
+from algoro.admin.routes.blocklist_routes import router as blocklist_router
 
 STATIC_DIR = Path(__file__).parent.parent.parent.parent / "static"
 
@@ -1495,7 +1495,7 @@ Expected: all tests PASSED.
 - [ ] **Step 8: Commit**
 
 ```bash
-git add firmware/templates/ firmware/src/slopstop/admin/routes/blocklist_routes.py firmware/src/slopstop/admin/app.py firmware/tests/test_admin.py
+git add firmware/templates/ firmware/src/algoro/admin/routes/blocklist_routes.py firmware/src/algoro/admin/app.py firmware/tests/test_admin.py
 git commit -m "feat: admin dashboard and blocklist management UI"
 ```
 
@@ -1504,26 +1504,26 @@ git commit -m "feat: admin dashboard and blocklist management UI"
 ## Task 9: Systemd service files and install script
 
 **Files:**
-- Create: `firmware/systemd/slopstop-admin.service`
+- Create: `firmware/systemd/algoro-admin.service`
 - Create: `firmware/systemd/install.sh`
 
 No unit tests for this task — the service is verified by the integration test in Task 10.
 
-- [ ] **Step 1: Write `firmware/systemd/slopstop-admin.service`**
+- [ ] **Step 1: Write `firmware/systemd/algoro-admin.service`**
 
 ```ini
 [Unit]
-Description=slopstop Admin Web Interface
+Description=algoro Admin Web Interface
 After=network.target unbound.service
 
 [Service]
-ExecStart=/usr/local/bin/uvicorn slopstop.admin.app:app --host 0.0.0.0 --port 80
-WorkingDirectory=/opt/slopstop/firmware
-Environment="SLOPSTOP_DB_PATH=/var/lib/slopstop/slopstop.db"
-Environment="SLOPSTOP_BLOCKLIST_PATH=/var/lib/slopstop/active_blocklist.txt"
-Environment="SLOPSTOP_UNBOUND_CONF=/etc/unbound/unbound.conf.d/slopstop.conf"
-Environment="SLOPSTOP_DNS_TEMPLATE_DIR=/opt/slopstop/firmware/dns"
-Environment="SLOPSTOP_PRESET_DIR=/opt/slopstop/firmware/blocklists"
+ExecStart=/usr/local/bin/uvicorn algoro.admin.app:app --host 0.0.0.0 --port 80
+WorkingDirectory=/opt/algoro/firmware
+Environment="ALGORO_DB_PATH=/var/lib/algoro/algoro.db"
+Environment="ALGORO_BLOCKLIST_PATH=/var/lib/algoro/active_blocklist.txt"
+Environment="ALGORO_UNBOUND_CONF=/etc/unbound/unbound.conf.d/algoro.conf"
+Environment="ALGORO_DNS_TEMPLATE_DIR=/opt/algoro/firmware/dns"
+Environment="ALGORO_PRESET_DIR=/opt/algoro/firmware/blocklists"
 Restart=always
 User=root
 
@@ -1536,12 +1536,12 @@ WantedBy=multi-user.target
 ```bash
 #!/usr/bin/env bash
 # Run as root on the Pi. Assumes:
-# - repo is checked out at /opt/slopstop
+# - repo is checked out at /opt/algoro
 # - Python 3.11+, pip, unbound, dnscrypt-proxy are installed
 set -euo pipefail
 
-INSTALL_DIR=/opt/slopstop/firmware
-DATA_DIR=/var/lib/slopstop
+INSTALL_DIR=/opt/algoro/firmware
+DATA_DIR=/var/lib/algoro
 
 echo "==> Installing Python package..."
 pip install -e "$INSTALL_DIR"
@@ -1552,17 +1552,17 @@ mkdir -p "$DATA_DIR"
 echo "==> Initialising database..."
 python3 -c "
 from pathlib import Path
-from slopstop.db import init_db
+from algoro.db import init_db
 import os
-os.environ['SLOPSTOP_DB_PATH'] = '/var/lib/slopstop/slopstop.db'
-init_db(Path('/var/lib/slopstop/slopstop.db'))
+os.environ['ALGORO_DB_PATH'] = '/var/lib/algoro/algoro.db'
+init_db(Path('/var/lib/algoro/algoro.db'))
 "
 
 echo "==> Installing systemd units..."
-cp "$INSTALL_DIR/systemd/slopstop-admin.service" /etc/systemd/system/
+cp "$INSTALL_DIR/systemd/algoro-admin.service" /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable slopstop-admin
-systemctl start slopstop-admin
+systemctl enable algoro-admin
+systemctl start algoro-admin
 
 echo "==> Done. Admin UI running at http://$(hostname -I | awk '{print $1}')"
 echo "    Set your router's DNS server to that IP."
@@ -1601,10 +1601,10 @@ from pathlib import Path
 
 import pytest
 
-from slopstop.auth import set_password
-from slopstop.blocklist import add_domain, export_to_file
-from slopstop.db import init_db
-from slopstop.dns_control import (
+from algoro.auth import set_password
+from algoro.blocklist import add_domain, export_to_file
+from algoro.db import init_db
+from algoro.dns_control import (
     DEFAULT_TEMPLATE_DIR,
     UNBOUND_CONF_PATH,
     generate_unbound_conf,
@@ -1619,7 +1619,7 @@ def test_blocked_domain_returns_nxdomain(tmp_path: Path) -> None:
     """
     db_path = tmp_path / "test.db"
     init_db(db_path)
-    add_domain("slopstop-integration-test-blocked.invalid", db_path)
+    add_domain("algoro-integration-test-blocked.invalid", db_path)
 
     blocklist_path = tmp_path / "blocklist.txt"
     export_to_file(db_path, blocklist_path)
@@ -1628,7 +1628,7 @@ def test_blocked_domain_returns_nxdomain(tmp_path: Path) -> None:
     time.sleep(0.5)  # give Unbound a moment to reload
 
     try:
-        socket.getaddrinfo("slopstop-integration-test-blocked.invalid", None)
+        socket.getaddrinfo("algoro-integration-test-blocked.invalid", None)
         pytest.fail("Expected socket.gaierror (NXDOMAIN) but got a result")
     except socket.gaierror:
         pass  # expected: domain is blocked
@@ -1655,7 +1655,7 @@ Expected: all non-integration tests PASSED.
 
 On the Pi (run as root after install.sh):
 ```bash
-cd /opt/slopstop/firmware
+cd /opt/algoro/firmware
 pytest tests/test_integration.py -v -m integration
 ```
 
@@ -1673,8 +1673,8 @@ git commit -m "test: end-to-end integration tests for DNS blocking"
 ## Self-review notes
 
 - All types used in tests (`Path`, `TestClient`, etc.) are defined or imported in each task — no cross-task type dependencies.
-- `reload_dns` is consistently patched in admin tests via `patch("slopstop.admin.routes.blocklist_routes.reload_dns")` — matches where it is imported.
-- `SLOPSTOP_PRESET_DIR` env var is set in each preset test that needs it — tests are independent.
+- `reload_dns` is consistently patched in admin tests via `patch("algoro.admin.routes.blocklist_routes.reload_dns")` — matches where it is imported.
+- `ALGORO_PRESET_DIR` env var is set in each preset test that needs it — tests are independent.
 - The `app.py` in Task 8 replaces the version from Task 7 completely — both versions shown in full, no "similar to" shortcuts.
 - "Recent block events" from the spec is explicitly deferred (noted at top of plan).
 - Password recovery path (re-flash SD card) is not implemented in this plan — it is a physical operation, not a software one.

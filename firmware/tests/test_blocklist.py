@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from slopstop.blocklist import (
+from algoro.blocklist import (
     add_domain,
     remove_domain,
     list_domains,
@@ -68,7 +68,7 @@ def test_add_domain_stores_preset(db_path: Path) -> None:
 
 
 def test_import_social_only_preset(db_path: Path) -> None:
-    os.environ["SLOPSTOP_PRESET_DIR"] = PRESET_DIR
+    os.environ["ALGORO_PRESET_DIR"] = PRESET_DIR
     count = import_preset("social_only", db_path)
     assert count > 0
     domains = {d["domain"] for d in list_domains(db_path)}
@@ -78,24 +78,24 @@ def test_import_social_only_preset(db_path: Path) -> None:
 
 
 def test_import_preset_sets_preset_field(db_path: Path) -> None:
-    os.environ["SLOPSTOP_PRESET_DIR"] = PRESET_DIR
+    os.environ["ALGORO_PRESET_DIR"] = PRESET_DIR
     import_preset("social_only", db_path)
     domains = list_domains(db_path)
     assert all(d["preset"] == "social_only" for d in domains)
 
 
 def test_import_preset_skips_comment_lines(db_path: Path) -> None:
-    os.environ["SLOPSTOP_PRESET_DIR"] = PRESET_DIR
+    os.environ["ALGORO_PRESET_DIR"] = PRESET_DIR
     import_preset("social_only", db_path)
     for d in list_domains(db_path):
         assert not d["domain"].startswith("#")
 
 
 def test_hard_mode_contains_more_domains_than_social_only(db_path: Path, tmp_path: Path) -> None:
-    os.environ["SLOPSTOP_PRESET_DIR"] = PRESET_DIR
+    os.environ["ALGORO_PRESET_DIR"] = PRESET_DIR
     db_social = tmp_path / "social.db"
     db_hard = tmp_path / "hard.db"
-    from slopstop.db import init_db
+    from algoro.db import init_db
     init_db(db_social)
     init_db(db_hard)
     social_count = import_preset("social_only", db_social)

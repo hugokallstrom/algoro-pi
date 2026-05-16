@@ -1,8 +1,8 @@
-# slopstop v1 — hardened Pi appliance for self-imposed website blocking
+# algoro v1 — hardened Pi appliance for self-imposed website blocking
 
 **Status:** design (pre-implementation)
 **Date:** 2026-05-11
-**Working title:** "slopstop" — rename throughout once brand is chosen.
+**Working title:** "algoro" — rename throughout once brand is chosen.
 
 ## Summary
 
@@ -45,7 +45,7 @@ Sits alongside the digital-minimalism movement, not the productivity-app market.
 ### Setup UX (the differentiator)
 
 1. User plugs in power + ethernet. LED indicates ready.
-2. User connects to the Pi's setup WiFi (SSID like `slopstop-XXXX`) or scans the QR code on the box.
+2. User connects to the Pi's setup WiFi (SSID like `algoro-XXXX`) or scans the QR code on the box.
 3. A captive web wizard runs through:
    - Pick preset (or custom list)
    - Set admin password (the only way to change config later)
@@ -146,7 +146,7 @@ Out of scope for this spec.
 
 ## Open decisions (parked, not blocking implementation)
 
-- Final brand name (working title "slopstop")
+- Final brand name (working title "algoro")
 - Exact enclosure: off-the-shelf vs custom-injection-molded (off-the-shelf for beta, custom later)
 - Whether the curated blocklist is community-editable or strictly curated (default: strictly curated for v1, OSS list contributions accepted)
 - AGPLv3 vs MIT for firmware license (current default: AGPLv3)

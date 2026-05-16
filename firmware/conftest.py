@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from slopstop.db import init_db
+from algoro.db import init_db
 
 
 @pytest.fixture
