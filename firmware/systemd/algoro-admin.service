@@ -3,7 +3,7 @@ Description=algoro Admin Web Interface
 After=network.target unbound.service
 
 [Service]
-ExecStart=/opt/algoro/venv/bin/uvicorn algoro.admin.app:app --host 0.0.0.0 --port 80
+ExecStart=/opt/algoro/venv/bin/uvicorn algoro.admin.app:app --host 0.0.0.0 --port 8080
 WorkingDirectory=/opt/algoro/firmware
 Environment="ALGORO_DB_PATH=/var/lib/algoro/algoro.db"
 Environment="ALGORO_BLOCKLIST_PATH=/var/lib/algoro/active_blocklist.txt"
